@@ -1,0 +1,28 @@
+{
+  "name": "coloring-book",
+  "version": "1.0.0",
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "rimraf build && yarn run copy-files build && pug -o build src && sass src/styles/style.scss build/style.css",
+    "copy-files": "cpx \"src/**/*.{js,svg}\"",
+    "start": "rimraf dist && concurrently \"yarn run copy-files dist -w\" \"pug -o dist -w src\" \"sass --watch src/styles/style.scss dist/style.css\" \"live-server dist\"",
+    "deploy": "serverless deploy",
+    "remove": "serverless remove"
+  },
+  "dependencies": {
+    "bootstrap": "5.0.1"
+  },
+  "devDependencies": {
+    "concurrently": "6.1.0",
+    "cpx": "1.5.0",
+    "live-server": "1.2.1",
+    "pug-cli": "1.0.0-alpha6",
+    "rimraf": "3.0.2",
+    "sass": "1.32.12",
+    "serverless": "2.43.1",
+    "serverless-cloudfront-invalidate": "1.9.0",
+    "serverless-s3-deploy": "0.10.0",
+    "serverless-s3-remover": "0.6.0",
+    "serverless-scriptable-plugin": "1.2.1"
+  }
+}

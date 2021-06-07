@@ -1,0 +1,51 @@
+doctype html
+html(lang="en")
+    head
+        meta(charset="utf-8")
+        meta(name="viewport" content="width=device-width, initial-scale=1")
+
+        title Coloring book
+
+        link(href="/style.css" rel="stylesheet")
+
+    body
+        .container-fluid.h-100.d-flex.flex-column
+            .row
+                .col.mt-3
+                    #drawings.d-flex
+                        div: object(type="image/svg+xml" data="/images/foxes.svg")
+                        div: object(type="image/svg+xml" data="/images/lightbulb.svg")
+                        div: object(type="image/svg+xml" data="/images/lightbulb2.svg")
+
+            .row.align-items-center.flex-grow-1
+
+                .col.h-100.d-flex.flex-column
+                    .h-100.text-center.my-3
+                        object#drawing.h-100(type="image/svg+xml" data="/images/lightbulb.svg")
+
+                    .text-center.mb-3
+                        button#download.btn.btn-secondary Download
+
+                .col-3#colors-col
+                    #colors-wrapper
+                        #colors
+                            .color.bd-blue-200: .gradient
+                            .color.bd-blue-500: .gradient
+                            .color.bd-blue-800: .gradient
+                            .color.bd-purple-200: .gradient
+                            .color.bd-purple-500: .gradient
+                            .color.bd-purple-800: .gradient
+                            .color.bd-red-200: .gradient
+                            .color.bd-red-500.selected: .gradient
+                            .color.bd-red-800: .gradient
+                            .color.bd-yellow-200: .gradient
+                            .color.bd-yellow-500: .gradient
+                            .color.bd-yellow-800: .gradient
+                            .color.bd-green-200: .gradient
+                            .color.bd-green-500: .gradient
+                            .color.bd-green-800: .gradient
+                            .color.bd-white: .gradient
+                            .color.bd-gray-500: .gradient
+                            .color.bd-black: .gradient
+
+        script(src="/scripts/coloring.js")

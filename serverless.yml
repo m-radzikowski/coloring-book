@@ -1,0 +1,102 @@
+service: coloringBook
+
+plugins:
+  - serverless-s3-deploy
+  - serverless-s3-remover
+  - serverless-scriptable-plugin
+  - serverless-cloudfront-invalidate
+
+custom:
+  baseName: ${self:service}-${self:provider.stage}
+
+  scriptHooks:
+    after:aws:deploy:deploy:updateStack:
+      - yarn run build
+
+  assets:
+    auto: true
+    targets:
+      - bucket: !Ref WebsiteBucket
+        empty: true
+        files:
+          - source: build
+            globs: '**/*'
+
+  remover:
+    buckets:
+      - ${cf:${self:custom.baseName}.WebsiteBucketName, ''}
+
+  cloudfrontInvalidate:
+    - distributionIdKey: WebsiteDistributionId
+      items:
+        - "/*"
+
+provider:
+  name: aws
+  region: eu-west-1
+  stage: ${opt:stage, 'dev'}
+  stackName: ${self:custom.baseName}
+
+resources:
+  Resources:
+
+    # S3
+
+    WebsiteBucket:
+      Type: AWS::S3::Bucket
+
+    WebsiteBucketCloudFrontAccessPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref WebsiteBucket
+        PolicyDocument:
+          Statement:
+            - Action: s3:GetObject
+              Effect: Allow
+              Resource: !Sub '${WebsiteBucket.Arn}/*'
+              Principal:
+                CanonicalUser: !GetAtt WebsiteDistributionOAI.S3CanonicalUserId
+
+    # CLOUDFRONT
+
+    WebsiteDistribution:
+      Type: AWS::CloudFront::Distribution
+      Properties:
+        DistributionConfig:
+          Enabled: true
+          Comment: ${self:custom.baseName}
+          PriceClass: PriceClass_100
+          HttpVersion: http2
+          Origins:
+            - Id: websiteS3
+              DomainName: !GetAtt WebsiteBucket.RegionalDomainName
+              S3OriginConfig:
+                OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${WebsiteDistributionOAI}'
+          DefaultRootObject: index.html
+          DefaultCacheBehavior:
+            TargetOriginId: websiteS3
+            AllowedMethods:
+              - GET
+              - HEAD
+            CachedMethods:
+              - GET
+              - HEAD
+            Compress: true
+            ViewerProtocolPolicy: redirect-to-https
+            ForwardedValues:
+              QueryString: false
+              Cookies:
+                Forward: none
+
+    WebsiteDistributionOAI:
+      Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+      Properties:
+        CloudFrontOriginAccessIdentityConfig:
+          Comment: !Sub 'Access ${WebsiteBucket} bucket'
+
+  Outputs:
+    WebsiteBucketName:
+      Value: !Ref WebsiteBucket
+
+    WebsiteDistributionId:
+      Value: !Ref WebsiteDistribution
